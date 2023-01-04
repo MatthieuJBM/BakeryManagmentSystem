@@ -1,9 +1,15 @@
 package application;
 
-import model_base_de_datos.*;	
+import model_base_de_datos.*;
+import java.sql.*;
+import java.sql.DriverManager;
+import java.util.ArrayList;
+
+import installation_bakery_managment_system.*;	
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -23,7 +29,11 @@ public class Main extends Application {
 	Menu mnuFile, mnuEmployees, mnuBakeryProducts;
 	//Declaring MenuItem for File Menu
 	MenuItem mnuItmSave, mnuItmExit;
+	Menu mnuExport;
+	//Declaring MenuItem as SubItems of mnuItmExport
+	MenuItem mnuItmExportToCsv, mnuItmExportToTxt;
 	//Declaring MenuItem for Employees Menu
+	MenuItem mnuItmOpenEmployeesTab, mnuItmAddNewEmployee, mnuItmChangeEmployeesProperty, mnuItmDeleteAnEmployee, mnuItmShowFormerEmployees;
 	
 	//Declaring MenuItem for Products Menu
 	
@@ -31,6 +41,9 @@ public class Main extends Application {
 	Label lblEmployees;
 	TableView<String> tblEmployees;
 	TableColumn tblClmnId, tblClmnFirstName, tblClmnLastName;
+	
+	//Declaring buttons to Employees tab
+	Button btnAddNewEmployee;
 	
 	public void start(Stage myStage) {
 		try {
@@ -46,10 +59,24 @@ public class Main extends Application {
 			//Initializing MenuItem variables
 			mnuItmSave = new MenuItem("Save");
 			mnuItmExit = new MenuItem("Exit");
+			mnuExport = new Menu("Export");
 			
 			//Adding MenuItem to Menu
-			mnuFile.getItems().addAll(mnuItmSave, mnuItmExit);
+			mnuFile.getItems().addAll(mnuItmSave, mnuItmExit, mnuExport);
 			
+			//Creating and Adding submenus to Export
+			mnuItmExportToCsv = new MenuItem("Export to csv");
+			mnuItmExportToTxt = new MenuItem("Export to txt");
+			mnuExport.getItems().addAll(mnuItmExportToCsv, mnuItmExportToTxt);
+			
+			//Creating and adding MenuItem to Employees
+			mnuItmOpenEmployeesTab = new MenuItem("Open");
+				mnuItmOpenEmployeesTab.setOnAction(e -> bakeryManagmentSystemsEmployeesViewCreator());
+			mnuItmAddNewEmployee = new MenuItem("Add new employee");
+			mnuItmChangeEmployeesProperty = new MenuItem("Change information about an employee");
+			mnuItmDeleteAnEmployee = new MenuItem("Delete an employee");
+			mnuItmShowFormerEmployees = new MenuItem("Show former employees");
+			mnuEmployees.getItems().addAll(mnuItmOpenEmployeesTab, mnuItmAddNewEmployee, mnuItmChangeEmployeesProperty, mnuItmDeleteAnEmployee, mnuItmShowFormerEmployees);			
 			
 			
 			//Creating the frame
@@ -62,6 +89,38 @@ public class Main extends Application {
 			myStage.setMinHeight(700);
 			myStage.setScene(miEscena);
 			myStage.show();
+			
+			//Installation of DataBase on the computer
+			try {
+				//Checking if database already exists
+				ArrayList<String> list = new ArrayList<String>();
+				String data_base_name = "Bakery_Managment_System";
+				Connection myConnect = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "root", "1234");
+				System.out.println("Conexion establecida");
+				DatabaseMetaData dbm = myConnect.getMetaData();
+				ResultSet rs = dbm.getCatalogs();
+				
+				while(rs.next()) {
+					String listOfDatabases = rs.getString("TABLE_CAT");
+					list.add(listOfDatabases);
+				}
+				if(list.contains(data_base_name)) {
+					System.out.println("Database already exists");
+					
+				}else {
+					//Creating Database and tables
+					Install_bakery_managment_system install_data_base = new Install_bakery_managment_system();
+					install_data_base.createDataBase();
+					install_data_base.createTables();
+					
+				}
+				rs.close();
+				myConnect.close();
+				
+			
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
 			
 			bakeryManagmentSystemsEmployeesViewCreator();
 		} catch(Exception e) {
@@ -93,8 +152,31 @@ public class Main extends Application {
 		
 		tblEmployees.getColumns().addAll(tblClmnId, tblClmnFirstName, tblClmnLastName);
 			
-		contenedor.getChildren().addAll(lblEmployees, tblEmployees);
+		//Initializing buttons via self created method
+		btnAddNewEmployee = buttonCreator("Add new employee", 15, 600);
+		
+		contenedor.getChildren().addAll(lblEmployees, tblEmployees, btnAddNewEmployee);
+	}
+	
+	public Button buttonCreator(String btnName, double btnSetTranslateX, double btnSetTranslateY) {
+		Button newButton = new Button(btnName);
+		newButton.setTranslateX(btnSetTranslateX);
+		newButton.setTranslateY(btnSetTranslateY);
+		
+		return newButton;
 	}
 	
 	
 }
+
+
+
+
+
+
+
+
+
+
+
+
