@@ -1,13 +1,18 @@
 package application;
 
 import model_base_de_datos.*;
+import entity.*;
 import java.sql.*;
-import java.sql.DriverManager;
 import java.util.ArrayList;
 
 import installation_bakery_managment_system.*;	
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -15,8 +20,10 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
@@ -65,9 +72,12 @@ public class Main extends Application {
 	//Declaring variables for Entities view
 	MenuItem entityOpen;
 	Label lblEntities;
-	TableView<String> tblEntities;
+	ObservableList<ObservableList> entityData;
+	TableView tblEntities;
 	TableColumn tblClmnEntityId, tblClmnEntityName, tblClmnEntityStreet;
 	Button btnAddNewEntity;
+	//btnShowAllEntities;
+	
 	//Declaring variables for addNewEntity view
 	Pane addNewEntityContenedor;
 	Scene addNewEntityScene;
@@ -258,26 +268,51 @@ public class Main extends Application {
 				tblEntities.setEditable(false);
 				tblEntities.setTranslateX(15);
 				tblEntities.setTranslateY(60);
+				
+			/*	
 			//Creating columns for the table tblEmployees.	
 			tblClmnEntityId = new TableColumn("Entity Id");
 				tblClmnEntityId.setMinWidth(30);
 				tblClmnEntityId.setMaxWidth(40);
 			tblClmnEntityName = new TableColumn("Entity Name");
 				tblClmnEntityName.setMinWidth(100);
+				
+				/*
+				//
+				Entity entityExample = new Entity();
+				entityExample.setEntity_name("Produkcja");
+				ObservableList<Entity> data = FXCollections.observableArrayList(entityExample);
+				
+				tblClmnEntityName.setCellValueFactory(
+						new PropertyValueFactory<Entity, String>("entity_name"));
+				
+				//tblEntities.setItems(data);	
+				//
+				 * 
+				 */
+			/*	
 			tblClmnEntityStreet = new TableColumn("Street");
 				tblClmnEntityStreet.setMinWidth(100);
-		
-			tblEntities.getColumns().addAll(tblClmnEntityId, tblClmnEntityName, tblClmnEntityStreet);
+			*/	
+				
+			
+			//tblEntities.getColumns().addAll(tblClmnEntityId, tblClmnEntityName, tblClmnEntityStreet);
 			
 			//Initializing buttons via self created method
-			btnAddNewEntity = buttonCreatorHelper("Add new entity", 15, 600, 120, 20);
+			btnAddNewEntity = buttonCreatorHelper("Add new entity", 15, 480, 120, 20);
 				btnAddNewEntity.setOnAction(e -> addNewEntityWindow());
+			//btnShowAllEntities = buttonCreatorHelper("Show ")
 			
 			contenedorEntities = new Pane();
 			contenedorEntities.getChildren().addAll(lblEntities, tblEntities, btnAddNewEntity);
 			
+			allEntitiesShowMethod();
+			
 			entitiesCreated = true;
 		}
+		
+		
+		
 		
 		entitiesOn = true;
 		myStage.setTitle("Bakery Managment System - Entities");
@@ -314,9 +349,11 @@ public class Main extends Application {
 		//Creating buttons to send and cancel
 		//btnSendNewEntity, btnCancelNewEntity
 		btnSendNewEntity = buttonCreatorHelper("Send", 320, 80, 70, 20);
-			
+			btnSendNewEntity.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #05F81B");
+			btnSendNewEntity.setOnAction(e -> newEntitySendButton());
 		btnCancelNewEntity = buttonCreatorHelper("Cancel", 320, 110, 70, 20);
-		
+			btnCancelNewEntity.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #FF0500");
+			btnCancelNewEntity.setOnAction(e -> addNewEntityStage.close());
 		
 		addNewEntityContenedor = new Pane();
 		addNewEntityContenedor.getChildren().addAll(lblEntityId, lblEntityName, lblEntityCity, lblEntityStreet, lblEntityStreetNumber, lblEntityZipCode,
@@ -379,6 +416,108 @@ public class Main extends Application {
 		newTxtField.setEditable(true);
 		return newTxtField;
 	}
+	
+	//Methods having something in common with data base
+	
+	//New Entity Send Button
+	public void newEntitySendButton() {
+		/*
+		txtFldEntityId, txtFldEntityName, txtFldEntityCity, txtFldEntityStreet, txtFldEntityStreetNumber, 
+		txtFldEntityZipCode
+		*/
+		Entity newEntity = new Entity();
+		newEntity.setEntity_id(txtFldEntityId.getText());
+		newEntity.setEntity_name(txtFldEntityName.getText());
+		newEntity.setEntity_city(txtFldEntityCity.getText());
+		newEntity.setEntity_street(txtFldEntityStreet.getText());
+		newEntity.setEntity_street_number(txtFldEntityStreetNumber.getText());
+		newEntity.setEntity_zip_code(txtFldEntityZipCode.getText());
+		
+		newEntity.addNewEntity();
+		
+		addNewEntityStage.close();
+	}
+	
+	//All Entities Show Method
+	public void allEntitiesShowMethod() {
+		/*
+
+		ObservableList<ObservableList> entityData;
+		TableView<Entity> tblEntities;
+		TableColumn tblClmnEntityId, tblClmnEntityName, tblClmnEntityStreet;
+		 
+		 
+		 */
+		entityData = FXCollections.observableArrayList();
+		
+		try {
+			//Creating connection
+			Connection myConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Bakery_Managment_System", "root", "1234");
+			//Creating object statement
+			Statement myStmt = myConnection.createStatement();
+			//Preparing a sql instruction
+			
+			/*
+			 entity_id, entity_name, entity_city, entity_street, entity_street_number, entity_zip_code,
+			 entity_rental, entity_utilities, entity_employees_salary_sum, entity_income, entity_profit,
+			 entity_position_name
+			 
+			 */
+			//String sql = "SELECT entity_name FROM Entities;";
+			String sql = "SELECT entity_id AS id, entity_name AS Entity, street AS Street FROM Entities;";
+			
+			//Executing query
+			
+			ResultSet rs = myStmt.executeQuery(sql);
+			
+			/***************************************************
+			 * TABLE COLUMN ADDED DYNAMICALLY *
+			 *********************************************/
+			
+			for(int i=0 ; i<rs.getMetaData().getColumnCount() ; i++) {
+				//We are using non property style for making dynamic table
+				final int j = i;
+				TableColumn col = new TableColumn(rs.getMetaData().getColumnName(i+1));
+				col.setCellValueFactory(new Callback<CellDataFeatures<ObservableList, String>, ObservableValue<String>>(){
+					public ObservableValue<String> call(CellDataFeatures<ObservableList, String> param) {
+						return new SimpleStringProperty(param.getValue().get(j).toString());
+					}
+				});
+				tblEntities.getColumns().addAll(col);
+				System.out.println("Column ["+i+"] ");
+				
+			}
+			
+			
+			
+			
+			/*********************************
+			 * DATA ADDED TO OBSERVABLELIST *
+			 *********************************/
+			
+			while(rs.next()) {
+				//Iterate Row
+				ObservableList<String> row = FXCollections.observableArrayList();
+				for(int i=1 ; i<=rs.getMetaData().getColumnCount() ; i++) {
+					//Iterate Column
+					row.add(rs.getString(i));
+				}
+				System.out.println("Row added " + row );
+				entityData.add(row);
+				
+			}
+			
+			tblEntities.setItems(entityData);
+			
+			rs.close();
+			myConnection.close();
+			
+		}catch(Exception e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			System.exit(0);
+		}
+	}
+	
 	
 	
 	

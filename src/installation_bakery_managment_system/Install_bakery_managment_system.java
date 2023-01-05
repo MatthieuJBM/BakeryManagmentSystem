@@ -27,6 +27,7 @@ public class Install_bakery_managment_system {
 									  + "entity_id varchar(10), "
 									  + "entity_name varchar(30), "
 									  + "city varchar(40), "
+									  + "street varchar(40), "
 									  + "street_number varchar(10), "
 									  + "zip_code varchar(10),"
 									  + "PRIMARY KEY (entity_id) "
