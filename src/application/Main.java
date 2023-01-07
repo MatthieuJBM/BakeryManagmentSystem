@@ -11,6 +11,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Orientation;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.scene.Scene;
@@ -19,6 +20,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
@@ -76,7 +78,14 @@ public class Main extends Application {
 	TableView tblEntities;
 	TableColumn tblClmnEntityId, tblClmnEntityName, tblClmnEntityStreet;
 	Button btnAddNewEntity;
+	Button btnAddNewEntityCosts, btnAddNewEntityPosition;
+	Button btnShowAllInformationAboutTheEntities;
+	Button btnShowFullAddress, btnShowCosts, btnShowPositions;
+	Button btnHideFullAddress, btnHideCosts, btnHidePositions;
+	ArrayList<Label> temporaryAddressLabelArrayList = new ArrayList<>();
+	
 	//btnShowAllEntities;
+	//ArrayList<Entity> entitiesCollection = new ArrayList<>();
 	
 	//Declaring variables for addNewEntity view
 	Pane addNewEntityContenedor;
@@ -97,6 +106,31 @@ public class Main extends Application {
 	//New Scene and Pane and other elements for Entities view
 	//Scene sceneEntities;
 	Pane contenedorEntities;
+	
+	//Elements for Add Entity Costs window
+	Pane addNewEntityCostsContenedor;
+	Scene addNewEntityCostsScene;
+	Stage addNewEntityCostsStage;
+	Label lblEntityIdCosts, lblRental, lblUtilities, lblEmployeesSalariesSum;
+	Label lblIncome, lblProfit;
+	Label lblMonth, lblYear;
+	TextField txtFldEntityIdCosts, txtFldRental, txtFldUtilities, txtFldEmployeesSalariesSum;
+	TextField txtFldIncome, txtFldProfit;
+	TextField txtFldMonth, txtFldYear;
+	Button btnSendCosts, btnCancelCosts, btnRefreshProfit;
+	
+	//Elements for Add Entity Position window
+	Pane addNewEntityPositionContenedor;
+	Scene addNewEntityPositionScene;
+	Stage addNewEntityPositionStage;
+	Label lblEntityPositionName, lblEntityIdPositions;
+	TextField txtFldEntityPositionName, txtFldEntityIdPosition;
+	Button btnSendPosition, btnCancelPosition;
+	
+	
+	//Elements for new TableView on Entities tab
+	
+	
 	
 	
 	public void start(Stage myStage) {
@@ -301,18 +335,43 @@ public class Main extends Application {
 			//Initializing buttons via self created method
 			btnAddNewEntity = buttonCreatorHelper("Add new entity", 15, 480, 120, 20);
 				btnAddNewEntity.setOnAction(e -> addNewEntityWindow());
-			//btnShowAllEntities = buttonCreatorHelper("Show ")
+				
+			btnAddNewEntityCosts = buttonCreatorHelper("Add costs", 140, 480, 120, 20);
+				btnAddNewEntityCosts.setOnAction(e -> addNewEntityCostsWindow());
+				
+			btnAddNewEntityPosition = buttonCreatorHelper("Add new position", 265, 480, 120, 20);
+				btnAddNewEntityPosition.setOnAction(e -> addNewEntityPositionWindow());
+			
+			btnShowAllInformationAboutTheEntities = buttonCreatorHelper("Show All Information", 15, 510, 120, 20);
+				btnShowAllInformationAboutTheEntities.setOnAction(e -> showAllInformationAboutTheEntities());
+			
+				
+			//btnShowFullAddress, btnShowCosts, btnShowPositions
+			btnShowFullAddress = buttonCreatorHelper("Show Address", 15, 540, 120, 20);
+				btnShowFullAddress.setOnAction(e -> showFullEntityAddress());
+				btnHideFullAddress = buttonCreatorHelper("Hide Address", 15, 540, 120, 20);
+				btnHideFullAddress.setOnAction(e -> hideFullEntityAddress());
+				btnHideFullAddress.setVisible(false);
+			btnShowCosts = buttonCreatorHelper("Show Costs", 140, 540, 120, 20);
+				//btnShowCosts.setOnAction(e -> );
+			btnShowPositions = buttonCreatorHelper("Show Positions", 265, 540, 120, 20);
+				
+			
+				
+
 			
 			contenedorEntities = new Pane();
-			contenedorEntities.getChildren().addAll(lblEntities, tblEntities, btnAddNewEntity);
+			contenedorEntities.getChildren().addAll(lblEntities, tblEntities, btnAddNewEntity,
+											btnAddNewEntityCosts, btnAddNewEntityPosition,
+											btnShowAllInformationAboutTheEntities,
+											btnShowFullAddress, btnShowCosts, btnShowPositions,
+											btnHideFullAddress);
 			
-			allEntitiesShowMethod();
 			
 			entitiesCreated = true;
 		}
 		
-		
-		
+		allEntitiesShowMethod();
 		
 		entitiesOn = true;
 		myStage.setTitle("Bakery Managment System - Entities");
@@ -322,6 +381,7 @@ public class Main extends Application {
 	
 	//Add windows creation
 	
+	//Add new entity window creation
 	public void addNewEntityWindow() {
 		
 		/*
@@ -366,6 +426,143 @@ public class Main extends Application {
 		addNewEntityStage.setMinHeight(300);
 		addNewEntityStage.setScene(addNewEntityScene);
 		addNewEntityStage.show();
+		
+	}
+	
+	//Add new entity costs window
+	public void addNewEntityCostsWindow() {
+		try {
+			String entityId = tblEntities.getSelectionModel().getSelectedItem().toString().substring(1, 3);
+			System.out.println("Entity id is: " + entityId);
+			
+			/*
+			 * lblEntityIdCosts, lblRental, lblUtilities, lblEmployeesSalariesSum, 
+			   lblIncome, lblProfit
+				 txtFldEntityIdCosts, txtFldRental, txtFldUtilities, txtFldEmployeesSalariesSum,
+				 txtFldIncome, txtFldProfit
+					btnSendCosts, btnCancelCosts
+			 * 
+			 */
+			
+			//Creating all the Labels
+			lblEntityIdCosts = labelCreatorHelper("Entity id:", 25, 25);
+			lblRental = labelCreatorHelper("Rental:", 175, 25);
+			lblUtilities = labelCreatorHelper("Utilities:", 25, 100);
+			lblEmployeesSalariesSum = labelCreatorHelper("Sum of salaries:", 175, 100);
+			lblIncome = labelCreatorHelper("Income:", 25, 185);
+			lblProfit = labelCreatorHelper("Profit:", 175, 185);
+			lblMonth = labelCreatorHelper("Month:", 325, 25); 
+			lblYear = labelCreatorHelper("Year:", 400, 25);
+					
+			//Creating all the TextFields
+			txtFldEntityIdCosts = textFieldCreatorHelper(25, 45, 100, 35);
+				txtFldEntityIdCosts.setText(entityId);
+				txtFldEntityIdCosts.setEditable(false);
+			txtFldRental = textFieldCreatorHelper(175, 45, 100, 35);
+				txtFldRental.setText("0.00");
+				txtFldRental.setOnMouseExited(e -> refreshProfit());
+			txtFldUtilities = textFieldCreatorHelper(25, 120, 100, 35);
+				txtFldUtilities.setText("0.00");
+				txtFldUtilities.setOnMouseExited(e -> refreshProfit());
+			txtFldEmployeesSalariesSum = textFieldCreatorHelper(175, 120, 100, 35);
+				txtFldEmployeesSalariesSum.setText("0.00");
+				txtFldEmployeesSalariesSum.setOnMouseExited(e -> refreshProfit());
+			txtFldIncome = textFieldCreatorHelper(25, 205, 100, 35);
+				txtFldIncome.setText("0.00");
+				txtFldIncome.setOnMouseExited(e -> refreshProfit());
+			txtFldProfit = textFieldCreatorHelper(175, 205, 100, 35);
+				txtFldProfit.setOnMouseExited(e -> refreshProfit());
+				
+			txtFldMonth = textFieldCreatorHelper(365, 20, 30, 15);
+				txtFldMonth.setText("01");
+			txtFldYear = textFieldCreatorHelper(430, 20, 50, 15);
+				txtFldYear.setText("2023");
+			
+			//Creating the buttons
+			btnSendCosts = buttonCreatorHelper("Send", 320, 80, 70, 20);
+				btnSendCosts.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #05F81B");
+				btnSendCosts.setOnAction(e -> newEntityCostsSendButton());
+			btnCancelCosts = buttonCreatorHelper("Cancel", 320, 110, 70, 20);
+				btnCancelCosts.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #FF0500");
+				btnCancelCosts.setOnAction(e -> addNewEntityCostsStage.close());
+			btnRefreshProfit = buttonCreatorHelper("Refresh", 280, 205, 75, 35);
+				btnRefreshProfit.setOnAction(e -> refreshProfit());
+			
+			
+			addNewEntityCostsContenedor = new Pane();
+			addNewEntityCostsContenedor.getChildren().addAll(lblEntityIdCosts, lblRental, lblUtilities, 
+					lblEmployeesSalariesSum, lblIncome, lblProfit, txtFldEntityIdCosts, txtFldRental, 
+					txtFldUtilities, txtFldEmployeesSalariesSum,txtFldIncome, txtFldProfit,
+					btnSendCosts, btnCancelCosts, btnRefreshProfit,
+					lblMonth, lblYear, txtFldMonth, txtFldYear);
+			
+			addNewEntityCostsScene = new Scene(addNewEntityCostsContenedor);
+			addNewEntityCostsStage = new Stage();
+			addNewEntityCostsStage.setTitle("Add costs to the selected entity");
+			addNewEntityCostsStage.setMinWidth(500);
+			addNewEntityCostsStage.setMinHeight(300);
+			addNewEntityCostsStage.setScene(addNewEntityCostsScene);
+			addNewEntityCostsStage.show();
+			
+			
+			
+		}catch(Exception e) {
+			System.out.println("Nothing selected, please try again.");
+		}
+	
+
+	
+		
+	}
+	public void addNewEntityPositionWindow() {
+
+		try {
+			String entityId = tblEntities.getSelectionModel().getSelectedItem().toString().substring(1, 3);
+			System.out.println("Entity id is: " + entityId);
+			
+		/*
+		Label lblPositionId, lblEntityPositionName, lblEntityIdPositions;
+		TextField txtFldPositionId, txtFldEntityPositionName, txtFldEntityIdPosition;
+		Button btnSendPosition, btnCancelPosition;
+		*/
+			//Labels
+			lblEntityIdPositions = labelCreatorHelper("Entity id:", 25, 25);
+			lblEntityPositionName = labelCreatorHelper("Position:", 25, 100);
+			
+			//TextFields
+			txtFldEntityIdPosition = textFieldCreatorHelper(25, 45, 100, 35);
+				txtFldEntityIdPosition.setText(entityId);
+				txtFldEntityIdPosition.setEditable(false);
+			
+			txtFldEntityPositionName = textFieldCreatorHelper(25, 120, 100, 35);
+			
+			
+			//Buttons
+			btnSendPosition = buttonCreatorHelper("Send", 320, 80, 70, 20);
+				btnSendPosition.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #05F81B");
+				btnSendPosition.setOnAction(e -> newEntityPositionSendButton());
+			btnCancelPosition = buttonCreatorHelper("Cancel", 320, 110, 70, 20);
+				btnCancelPosition.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #FF0500");
+				btnCancelPosition.setOnAction(e -> addNewEntityPositionStage.close());
+			
+		
+		
+			addNewEntityPositionContenedor = new Pane();
+			addNewEntityPositionContenedor.getChildren().addAll(lblEntityPositionName, lblEntityIdPositions,
+						txtFldEntityPositionName, txtFldEntityIdPosition,
+						btnSendPosition, btnCancelPosition);
+		
+			addNewEntityPositionScene = new Scene(addNewEntityPositionContenedor);
+			addNewEntityPositionStage = new Stage();
+			addNewEntityPositionStage.setTitle("Add new position to the selected entity");
+			addNewEntityPositionStage.setMinWidth(500);
+			addNewEntityPositionStage.setMinHeight(300);
+			addNewEntityPositionStage.setScene(addNewEntityPositionScene);
+			addNewEntityPositionStage.show();
+			
+		}catch (Exception e) {
+			System.out.println("Nothing selected, please try again.");
+		}
 		
 	}
 	
@@ -435,18 +632,55 @@ public class Main extends Application {
 		
 		newEntity.addNewEntity();
 		
+		allEntitiesShowMethod();
+		
 		addNewEntityStage.close();
+	}
+	
+	//New Entity Costs Send Button
+	public void newEntityCostsSendButton(){
+		
+		/*
+		 * txtFldEntityIdCosts, txtFldRental, txtFldUtilities, txtFldEmployeesSalariesSum,
+				 txtFldIncome, txtFldProfit
+		 */
+		
+		try {
+		//For now creating a new Entity object, then I want to have a reference to the
+		// objects that already have been created.
+		//I will try to do it via Serialization and a .txt file or making the objects again
+		// restoring the parameters from database.
+		
+			Entity newEntity = new Entity();
+			newEntity.setEntity_id(txtFldEntityIdCosts.getText());
+			newEntity.setEntity_rental(Double.parseDouble(txtFldRental.getText()));
+			newEntity.setEntity_utilities(Double.parseDouble(txtFldUtilities.getText()));
+			newEntity.setEntity_employees_salary_sum(Double.parseDouble(txtFldEmployeesSalariesSum.getText()));
+			newEntity.setEntity_income(Double.parseDouble(txtFldIncome.getText()));
+			newEntity.setEntity_profit(Double.parseDouble(txtFldProfit.getText()));
+			newEntity.setCosts_Month(txtFldMonth.getText());
+			newEntity.setCosts_Year(txtFldYear.getText());
+			
+			newEntity.addCostsToEntity();
+			addNewEntityCostsStage.close();
+			
+		}catch(Exception e) {
+			System.out.println("The values are not compatible");
+		}
+		
+		
+		
 	}
 	
 	//All Entities Show Method
 	public void allEntitiesShowMethod() {
+		//The following statement removes the data before so no duplicates appearing
+		// after opening the table again.
+		tblEntities.getColumns().clear();
 		/*
-
 		ObservableList<ObservableList> entityData;
 		TableView<Entity> tblEntities;
 		TableColumn tblClmnEntityId, tblClmnEntityName, tblClmnEntityStreet;
-		 
-		 
 		 */
 		entityData = FXCollections.observableArrayList();
 		
@@ -456,18 +690,15 @@ public class Main extends Application {
 			//Creating object statement
 			Statement myStmt = myConnection.createStatement();
 			//Preparing a sql instruction
-			
 			/*
 			 entity_id, entity_name, entity_city, entity_street, entity_street_number, entity_zip_code,
 			 entity_rental, entity_utilities, entity_employees_salary_sum, entity_income, entity_profit,
 			 entity_position_name
-			 
 			 */
 			//String sql = "SELECT entity_name FROM Entities;";
 			String sql = "SELECT entity_id AS id, entity_name AS Entity, street AS Street FROM Entities;";
 			
 			//Executing query
-			
 			ResultSet rs = myStmt.executeQuery(sql);
 			
 			/***************************************************
@@ -484,12 +715,8 @@ public class Main extends Application {
 					}
 				});
 				tblEntities.getColumns().addAll(col);
-				System.out.println("Column ["+i+"] ");
-				
+				//System.out.println("Column ["+i+"] ");
 			}
-			
-			
-			
 			
 			/*********************************
 			 * DATA ADDED TO OBSERVABLELIST *
@@ -502,9 +729,8 @@ public class Main extends Application {
 					//Iterate Column
 					row.add(rs.getString(i));
 				}
-				System.out.println("Row added " + row );
-				entityData.add(row);
-				
+				//System.out.println("Row added " + row );
+				entityData.add(row);	
 			}
 			
 			tblEntities.setItems(entityData);
@@ -512,14 +738,207 @@ public class Main extends Application {
 			rs.close();
 			myConnection.close();
 			
+			//Adding scroll
+			tblEntities.setMaxWidth(241);
+			tblEntities.setMaxHeight(400);
+				
+			
 		}catch(Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
 		}
 	}
 	
+	public void refreshProfit() {
+		try {
+		Double rentalRefresh = Double.parseDouble(txtFldRental.getText());
+		Double utilitiesRefresh = Double.parseDouble(txtFldUtilities.getText());
+		Double employees_salary_sumRefresh = Double.parseDouble(txtFldEmployeesSalariesSum.getText());
+		Double incomeRefresh = Double.parseDouble(txtFldIncome.getText());
+		
+		//Double profit = Double.parseDouble(txtFldProfit.getText());
+		Double profitRefresh;
+		profitRefresh = incomeRefresh - rentalRefresh - utilitiesRefresh - employees_salary_sumRefresh;
+		Math.round(profitRefresh);
+		
+		String profitRefreshString;
+		profitRefreshString = profitRefresh.toString();
+		
+		txtFldProfit.setText(profitRefreshString);
+		
+		}catch(Exception e) {
+			System.out.println("Not valid numeric type");
+		}
+	}
 	
 	
+	public void showAllInformationAboutTheEntities() {
+		//The following statement removes the data before so no duplicates appearing
+				// after opening the table again.
+				tblEntities.getColumns().clear();
+				/*
+				ObservableList<ObservableList> entityData;
+				TableView<Entity> tblEntities;
+				TableColumn tblClmnEntityId, tblClmnEntityName, tblClmnEntityStreet;
+				 */
+				entityData = FXCollections.observableArrayList();
+				
+				try {
+					//Creating connection
+					Connection myConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Bakery_Managment_System", "root", "1234");
+					//Creating object statement
+					Statement myStmt = myConnection.createStatement();
+					//Preparing a sql instruction
+					/*
+					 entity_id, entity_name, entity_city, entity_street, entity_street_number, entity_zip_code,
+					 entity_rental, entity_utilities, entity_employees_salary_sum, entity_income, entity_profit,
+					 entity_position_name
+					 */
+					//String sql = "SELECT entity_name FROM Entities;";
+					String sql = "SELECT * FROM Entities JOIN Entities_costs "
+							+ "ON Entities.entity_id = Entities_costs.entity_id;";
+					
+					//Executing query
+					ResultSet rs = myStmt.executeQuery(sql);
+					
+					/***************************************************
+					 * TABLE COLUMN ADDED DYNAMICALLY *
+					 *********************************************/
+					
+					for(int i=0 ; i<rs.getMetaData().getColumnCount() ; i++) {
+						//We are using non property style for making dynamic table
+						final int j = i;
+						TableColumn col = new TableColumn(rs.getMetaData().getColumnName(i+1));
+						col.setCellValueFactory(new Callback<CellDataFeatures<ObservableList, String>, ObservableValue<String>>(){
+							public ObservableValue<String> call(CellDataFeatures<ObservableList, String> param) {
+								return new SimpleStringProperty(param.getValue().get(j).toString());
+							}
+						});
+						tblEntities.getColumns().addAll(col);
+						//System.out.println("Column ["+i+"] ");
+					}
+					
+					/*********************************
+					 * DATA ADDED TO OBSERVABLELIST *
+					 *********************************/
+					
+					while(rs.next()) {
+						//Iterate Row
+						ObservableList<String> row = FXCollections.observableArrayList();
+						for(int i=1 ; i<=rs.getMetaData().getColumnCount() ; i++) {
+							//Iterate Column
+							row.add(rs.getString(i));
+						}
+						//System.out.println("Row added " + row );
+						entityData.add(row);	
+					}
+					
+					tblEntities.setItems(entityData);
+					
+					rs.close();
+					myConnection.close();
+						
+					//Adding scroll
+					tblEntities.setMaxWidth(500);
+					tblEntities.setMaxHeight(400);
+					
+					
+				}catch(Exception e) {
+					System.err.println(e.getClass().getName() + ": " + e.getMessage());
+					System.exit(0);
+				}
+	}
+	
+	//New Entity Position Send Button
+	public void newEntityPositionSendButton() {
+		
+		try {
+			//For now creating a new Entity object, then I want to have a reference to the
+			// objects that already have been created.
+			//I will try to do it via Serialization and a .txt file or making the objects again
+			// restoring the parameters from database.
+			
+			//TextField txtFldPositionId, txtFldEntityPositionName, txtFldEntityIdPosition
+			
+				Entity newEntity = new Entity();
+				newEntity.setEntity_id(txtFldEntityIdPosition.getText());
+				newEntity.setEntity_position_name(txtFldEntityPositionName.getText());
+				
+				newEntity.addPositionToEntity();
+				addNewEntityPositionStage.close();
+				
+			}catch(Exception e) {
+				System.out.println("The values are not compatible");
+			}
+		
+	}
+	
+	public void showFullEntityAddress() {
+		Label newLabel;
+		try {
+			String entityId = tblEntities.getSelectionModel().getSelectedItem().toString().substring(1, 3);
+			System.out.println("Entity id is: " + entityId);
+			
+			
+			
+			Entity newEntity = new Entity();
+			newEntity.setEntity_id(entityId);
+			
+			Connection myConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Bakery_Managment_System", "root", "1234");
+			Statement myStmt = myConnection.createStatement();
+			
+			String sql = "SELECT street, street_number, city, zip_code "
+					+ "FROM Entities "
+					+ "WHERE Entities.entity_id = '" + entityId + "';";
+			
+			ResultSet myResultSet = myStmt.executeQuery(sql);
+			//Going trough myResultSet
+			while(myResultSet.next()) {
+				String result;
+				
+				result = myResultSet.getString("street") + " " + myResultSet.getString("street_number") + ", " + myResultSet.getString("city") + " " + myResultSet.getString("zip_code");
+				
+				System.out.println(result);
+				
+				
+				newLabel = new Label(result);
+					newLabel.setTranslateX(350);
+					newLabel.setTranslateY(100);
+					
+				temporaryAddressLabelArrayList.add(newLabel);
+				
+				contenedorEntities.getChildren().add(newLabel);
+				
+				btnShowFullAddress.setVisible(false);
+				btnHideFullAddress.setVisible(true);
+					
+			}
+			
+				
+			//myStmt.executeUpdate(sql);
+			myResultSet.close();
+			myConnection.close();
+				
+			
+			
+		}catch(Exception e) {
+			System.out.println("Nothing selected, please try again.");
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			System.exit(0);
+		}
+		
+	}
+	public void hideFullEntityAddress() {
+		
+		//temporaryAddressLabelArrayList.get(0);
+		contenedorEntities.getChildren().remove(temporaryAddressLabelArrayList.get(0));
+		temporaryAddressLabelArrayList.remove(0);
+		
+		btnShowFullAddress.setVisible(true);
+		btnHideFullAddress.setVisible(false);
+		
+		
+	}
 	
 }
 

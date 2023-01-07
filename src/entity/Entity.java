@@ -17,6 +17,8 @@ public class Entity {
 	private double entity_employees_salary_sum;
 	private double entity_income;
 	private double entity_profit;
+	private String costs_month;
+	private String costs_year;
 	
 	//Declaring variables for positions table in database
 	private String entity_position_name;
@@ -117,6 +119,22 @@ public class Entity {
 		this.entity_position_name = entity_position_name;
 	}
 	
+	public String getCosts_Month() {
+		return costs_month;
+	}
+
+	public void setCosts_Month(String costs_month) {
+		this.costs_month = costs_month;
+	}
+
+	public String getCosts_Year() {
+		return costs_year;
+	}
+
+	public void setCosts_Year(String costs_year) {
+		this.costs_year = costs_year;
+	}
+	
 	public void addNewEntity() {
 		try {
 			//Creating connection
@@ -142,24 +160,52 @@ public class Entity {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
 		}
-		
-		
 	}
+	public void addCostsToEntity() {
+		
+		try {
+			Connection myConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Bakery_Managment_System", "root", "1234");
+			Statement myStmt = myConnection.createStatement();
+
+			String sql = "INSERT INTO Entities_costs(entity_id, rental, utilities, employees_salaries_sum, income, profit, month, year) "
+					+ "VALUES ('" + this.entity_id + "', " + this.entity_rental + ", " + this.entity_utilities + ", "
+					+ this.entity_employees_salary_sum + ", " + this.entity_income + ", " + this.entity_profit + ", '" + this.costs_month + "', '" + this.costs_year + "'" + ");";
+			
+			myStmt.executeUpdate(sql);
+			myConnection.close();
+			
+			
+			
+		}catch(Exception e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			System.exit(0);
+		}
+	}
+	public void addPositionToEntity() {
+		try {
+			Connection myConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Bakery_Managment_System", "root", "1234");
+			Statement myStmt = myConnection.createStatement();
+
+			String sql = "INSERT INTO Positions(position_name, entity_id) "
+					+ "VALUES ('" + this.entity_position_name + "', '" + this.entity_id + "');";
+			
+			myStmt.executeUpdate(sql);
+			myConnection.close();
+			
+			
+			
+		}catch(Exception e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			System.exit(0);
+		}
+	}
+
 	
-	//Para eliminar - sirve solamente para una vista mejor al lado derecho.
-	/*
-	//
-	Entity entityExample = new Entity();
-	entityExample.setEntity_name("Produkcja");
-	ObservableList<Entity> data = FXCollections.observableArrayList(entityExample);
+		
+
 	
-	tblClmnEntityName.setCellValueFactory(
-			new PropertyValueFactory<Entity, String>("entity_name"));
+
 	
-	//tblEntities.setItems(data);	
-	//
-	 * 
-	 */
 	
 	
 	
