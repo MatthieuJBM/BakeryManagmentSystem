@@ -80,9 +80,11 @@ public class Main extends Application {
 	Button btnAddNewEntity;
 	Button btnAddNewEntityCosts, btnAddNewEntityPosition;
 	Button btnShowAllInformationAboutTheEntities;
-	Button btnShowFullAddress, btnShowCosts, btnShowPositions;
+	Button btnShowFullAddress, btnShowPositions;
 	Button btnHideFullAddress, btnHideCosts, btnHidePositions;
 	ArrayList<Label> temporaryAddressLabelArrayList = new ArrayList<>();
+	TableView tblPositions;
+	ObservableList<ObservableList> positionsList;
 	
 	//btnShowAllEntities;
 	//ArrayList<Entity> entitiesCollection = new ArrayList<>();
@@ -272,7 +274,7 @@ public class Main extends Application {
 			tblEmployees.getColumns().addAll(tblClmnId, tblClmnFirstName, tblClmnLastName);
 			
 			//Initializing buttons via self created method
-			btnAddNewEmployee = buttonCreatorHelper("Add new employee", 15, 600, 150, 20);
+			btnAddNewEmployee = buttonCreatorHelper("Add new employee", 15, 480, 130, 20);
 				btnAddNewEmployee.setOnAction(e -> addNewEmployeeWindow());
 			
 			contenedorEmployees = new Pane();
@@ -303,34 +305,13 @@ public class Main extends Application {
 				tblEntities.setTranslateX(15);
 				tblEntities.setTranslateY(60);
 				
-			/*	
-			//Creating columns for the table tblEmployees.	
-			tblClmnEntityId = new TableColumn("Entity Id");
-				tblClmnEntityId.setMinWidth(30);
-				tblClmnEntityId.setMaxWidth(40);
-			tblClmnEntityName = new TableColumn("Entity Name");
-				tblClmnEntityName.setMinWidth(100);
+			tblPositions = new TableView<>();
+				tblPositions.setEditable(false);
+				tblPositions.setTranslateX(300);
+				tblPositions.setTranslateY(60);
+				//tblPositions.setMaxWidth(110);
+				tblPositions.setVisible(false);
 				
-				/*
-				//
-				Entity entityExample = new Entity();
-				entityExample.setEntity_name("Produkcja");
-				ObservableList<Entity> data = FXCollections.observableArrayList(entityExample);
-				
-				tblClmnEntityName.setCellValueFactory(
-						new PropertyValueFactory<Entity, String>("entity_name"));
-				
-				//tblEntities.setItems(data);	
-				//
-				 * 
-				 */
-			/*	
-			tblClmnEntityStreet = new TableColumn("Street");
-				tblClmnEntityStreet.setMinWidth(100);
-			*/	
-				
-			
-			//tblEntities.getColumns().addAll(tblClmnEntityId, tblClmnEntityName, tblClmnEntityStreet);
 			
 			//Initializing buttons via self created method
 			btnAddNewEntity = buttonCreatorHelper("Add new entity", 15, 480, 120, 20);
@@ -352,20 +333,18 @@ public class Main extends Application {
 				btnHideFullAddress = buttonCreatorHelper("Hide Address", 15, 540, 120, 20);
 				btnHideFullAddress.setOnAction(e -> hideFullEntityAddress());
 				btnHideFullAddress.setVisible(false);
-			btnShowCosts = buttonCreatorHelper("Show Costs", 140, 540, 120, 20);
-				//btnShowCosts.setOnAction(e -> );
-			btnShowPositions = buttonCreatorHelper("Show Positions", 265, 540, 120, 20);
-				
-			
-				
-
+			btnShowPositions = buttonCreatorHelper("Show Positions", 140, 540, 120, 20);
+				btnShowPositions.setOnAction(e -> showPositions());
+			btnHidePositions = buttonCreatorHelper("Hide Positions", 140, 540, 120, 20);
+				btnHidePositions.setVisible(false);
+				btnHidePositions.setOnAction(e -> hidePositions());
 			
 			contenedorEntities = new Pane();
 			contenedorEntities.getChildren().addAll(lblEntities, tblEntities, btnAddNewEntity,
 											btnAddNewEntityCosts, btnAddNewEntityPosition,
 											btnShowAllInformationAboutTheEntities,
-											btnShowFullAddress, btnShowCosts, btnShowPositions,
-											btnHideFullAddress);
+											btnShowFullAddress, btnShowPositions,
+											btnHideFullAddress, tblPositions, btnHidePositions);
 			
 			
 			entitiesCreated = true;
@@ -566,23 +545,6 @@ public class Main extends Application {
 		
 	}
 	
-	public void addNewEmployeeWindow() {
-		
-		
-		
-		
-		addNewEmployeeContenedor = new Pane();
-		addNewEmployeeContenedor.getChildren().addAll();
-		addNewEmployeeScene = new Scene(addNewEmployeeContenedor);
-		addNewEmployeeStage = new Stage();
-		addNewEmployeeStage.setTitle("Add new employee");
-		addNewEmployeeStage.setMinWidth(500);
-		addNewEmployeeStage.setMinHeight(300);
-		addNewEmployeeStage.setScene(addNewEmployeeScene);
-		addNewEmployeeStage.show();
-		
-		
-	}
 	
 	//Helper methods to create the elements with less code usage.
 	
@@ -912,14 +874,10 @@ public class Main extends Application {
 				btnShowFullAddress.setVisible(false);
 				btnHideFullAddress.setVisible(true);
 					
-			}
-			
-				
+			}	
 			//myStmt.executeUpdate(sql);
 			myResultSet.close();
 			myConnection.close();
-				
-			
 			
 		}catch(Exception e) {
 			System.out.println("Nothing selected, please try again.");
@@ -936,9 +894,124 @@ public class Main extends Application {
 		
 		btnShowFullAddress.setVisible(true);
 		btnHideFullAddress.setVisible(false);
+	}
+	public void showPositions() {
+		/*
+		 TableView tblPositions;
+		 ObservableList<ObservableList> positionsList;
+		 */
+		
+		String position_entityId = tblEntities.getSelectionModel().getSelectedItem().toString().substring(1, 3);
+		System.out.println("Entity id is: " + position_entityId);
+		
+		tblPositions.getColumns().clear();
+		positionsList = FXCollections.observableArrayList();
+		
+		try {
+			//Creating connection
+			Connection myConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Bakery_Managment_System", "root", "1234");
+			//Creating object statement
+			Statement myStmt = myConnection.createStatement();
+			//Preparing a sql instruction
+			/*
+			 entity_id, entity_name, entity_city, entity_street, entity_street_number, entity_zip_code,
+			 entity_rental, entity_utilities, entity_employees_salary_sum, entity_income, entity_profit,
+			 entity_position_name
+			 */
+			//String sql = "SELECT entity_name FROM Entities;";
+			String sql = "SELECT position_name FROM Positions WHERE entity_id='" + position_entityId + "';";
+			
+			//Executing query
+			ResultSet rs = myStmt.executeQuery(sql);
+			
+			/***************************************************
+			 * TABLE COLUMN ADDED DYNAMICALLY *
+			 *********************************************/
+			
+			for(int i=0 ; i<rs.getMetaData().getColumnCount() ; i++) {
+				//We are using non property style for making dynamic table
+				final int j = i;
+				TableColumn col = new TableColumn(rs.getMetaData().getColumnName(i+1));
+				col.setCellValueFactory(new Callback<CellDataFeatures<ObservableList, String>, ObservableValue<String>>(){
+					public ObservableValue<String> call(CellDataFeatures<ObservableList, String> param) {
+						return new SimpleStringProperty(param.getValue().get(j).toString());
+					}
+				});
+				tblPositions.getColumns().addAll(col);
+				//System.out.println("Column ["+i+"] ");
+			}
+			
+			
+			/*********************************
+			 * DATA ADDED TO OBSERVABLELIST *
+			 *********************************/
+			
+			while(rs.next()) {
+				//Iterate Row
+				ObservableList<String> row = FXCollections.observableArrayList();
+				for(int i=1 ; i<=rs.getMetaData().getColumnCount() ; i++) {
+					//Iterate Column
+					row.add(rs.getString(i));
+				}
+				//System.out.println("Row added " + row );
+				positionsList.add(row);	
+			}
+			
+			tblPositions.setItems(positionsList);
+			
+			rs.close();
+			myConnection.close();
+				
+			tblPositions.setVisible(true);
+			btnShowPositions.setVisible(false);
+			btnHidePositions.setVisible(true);
+			
+			//Adding scroll
+			tblPositions.setMaxWidth(102);
+			tblPositions.setMaxHeight(400);
+			
+			
+		}catch(Exception e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			System.exit(0);
+		}
+		
 		
 		
 	}
+	
+	public void hidePositions() {
+		tblPositions.setVisible(false);
+		btnShowPositions.setVisible(true);
+		btnHidePositions.setVisible(false);
+		
+	}
+	
+	/*******************************************
+	
+	EMPLOYEES VIEW BELOW
+	
+	********************************************/
+	
+	public void addNewEmployeeWindow() {
+		
+		
+		
+		
+		addNewEmployeeContenedor = new Pane();
+		addNewEmployeeContenedor.getChildren().addAll();
+		addNewEmployeeScene = new Scene(addNewEmployeeContenedor);
+		addNewEmployeeStage = new Stage();
+		addNewEmployeeStage.setTitle("Add new employee");
+		addNewEmployeeStage.setMinWidth(500);
+		addNewEmployeeStage.setMinHeight(300);
+		addNewEmployeeStage.setScene(addNewEmployeeScene);
+		addNewEmployeeStage.show();
+		
+		
+	}
+	
+	
 	
 }
 
