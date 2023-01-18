@@ -3,6 +3,7 @@ package application;
 import model_base_de_datos.*;
 import entity.*;
 import java.sql.*;
+import java.time.Instant;
 import java.util.ArrayList;
 
 import installation_bakery_managment_system.*;	
@@ -16,6 +17,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -29,7 +31,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
-
+import employees.*;;
 
 public class Main extends Application {
 	//Declaring variables needed for this program.
@@ -51,18 +53,13 @@ public class Main extends Application {
 	
 	//Declaring TableView and corresponding Label for showing the employees.
 	Label lblEmployees;
-	TableView<String> tblEmployees;
+	TableView tblEmployees;
+	ObservableList<ObservableList> employeesList;
 	TableColumn tblClmnId, tblClmnFirstName, tblClmnLastName;
 	
 	//Declaring buttons to Employees tab
 	Button btnAddNewEmployee;
 	
-	//Declaring variables for addNewEmployee view
-	Pane addNewEmployeeContenedor;
-	Scene addNewEmployeeScene;
-	Stage addNewEmployeeStage;
-	Label lbl;
-	TextField txtFld;
 	
 	//Declaring boolean values for see which view is on
 	boolean employeesOn = false;
@@ -132,8 +129,18 @@ public class Main extends Application {
 	
 	//Elements for new TableView on Entities tab
 	
+	/***********************
+	 Employee View Variables
+	****************/
 	
-	
+	//Declaring variables for addNewEmployee view
+		Pane addNewEmployeeContenedor;
+		Scene addNewEmployeeScene;
+		Stage addNewEmployeeStage;
+		Label lblEmplIdAddNewEmpl, lblEntityIdAddNewEmpl, lblFirstName, lblLastName, lblSalary, lblStartDate, lblEndDate;
+		TextField txtFldEmplIdAddNewEmpl, txtFldEntityIdAddNewEmpl, txtFldFirstName, txtFldLastName, txtFldStartDate, txtFldEndDate, txtFldSalary;
+		Button btnSendNewEmployee, btnCancelNewEmployee;
+		DatePicker startDate, endDate;
 	
 	public void start(Stage myStage) {
 		try {
@@ -284,6 +291,7 @@ public class Main extends Application {
 			employeesCreated = true;
 		}
 		
+		showEmployees();
 		myStage.setTitle("Bakery Managment System - Employees");
 		//myStage.setScene(sceneEmployees);
 		contenedorPrincipal.setCenter(contenedorEmployees);
@@ -995,11 +1003,64 @@ public class Main extends Application {
 	
 	public void addNewEmployeeWindow() {
 		
+		/*
+		 
+		 lblEmplIdAddNewEmpl, lblEntityIdAddNewEmpl, lblFirstName, lblLastName, lblStartDate, lblEndDate, lblSalary
+		 txtFldEmplIdAddNewEmpl, txtFldEntityIdAddNewEmpl, txtFldFirstName, txtFldLastName, txtFldStartDate, txtFldEndDate, txtFldSalary
+		 btnSendNewEmployee, btnCancelNewEmployee
+		 
+		 */
+		
+		
+		
+		//Creating all the Labels
+		lblEmplIdAddNewEmpl = labelCreatorHelper("Empl id:", 25, 25);
+		lblEntityIdAddNewEmpl = labelCreatorHelper("Entity id:", 175, 25);
+		lblFirstName = labelCreatorHelper("First Name:", 25, 100);
+		lblLastName = labelCreatorHelper("Last Name:", 175, 100);
+		lblStartDate = labelCreatorHelper("Start Date:", 25, 185);
+		lblEndDate = labelCreatorHelper("End Date:", 175, 185);
+		lblSalary = labelCreatorHelper("Salary:", 325, 185);
+		
+		//Creating all the TextFields
+		txtFldEmplIdAddNewEmpl = textFieldCreatorHelper(25, 45, 100, 35);
+		txtFldEntityIdAddNewEmpl = textFieldCreatorHelper(175, 45, 100, 35);
+		txtFldFirstName = textFieldCreatorHelper(25, 120, 100, 35);
+		txtFldLastName = textFieldCreatorHelper(175, 120, 100, 35);
+		//txtFldStartDate = textFieldCreatorHelper(25, 205, 100, 35);
+		//txtFldEndDate = textFieldCreatorHelper(175, 205, 100, 35);
+		txtFldSalary = textFieldCreatorHelper(325, 205, 100, 35);
+		
+		startDate = new DatePicker();
+			startDate.setTranslateX(25);
+			startDate.setTranslateY(205);
+			startDate.setMaxWidth(100);
+			startDate.setMaxHeight(35);
+		endDate = new DatePicker();
+			endDate.setTranslateX(175);
+			endDate.setTranslateY(205);
+			endDate.setMaxWidth(100);
+			endDate.setMaxHeight(35);
+			
+		//Creating buttons to send and cancel
+		//btnSendNewEntity, btnCancelNewEntity
+		btnSendNewEmployee = buttonCreatorHelper("Send", 320, 80, 70, 20);
+			btnSendNewEmployee.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #05F81B");
+			btnSendNewEmployee.setOnAction(e -> newEmployeeSendButton());
+		btnCancelNewEmployee = buttonCreatorHelper("Cancel", 320, 110, 70, 20);
+			btnCancelNewEmployee.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #FF0500");
+			btnCancelNewEmployee.setOnAction(e -> addNewEmployeeStage.close());
+		
 		
 		
 		
 		addNewEmployeeContenedor = new Pane();
-		addNewEmployeeContenedor.getChildren().addAll();
+		addNewEmployeeContenedor.getChildren().addAll( lblEmplIdAddNewEmpl, lblEntityIdAddNewEmpl, 
+								lblFirstName, lblLastName, lblStartDate, lblEndDate, lblSalary,
+								txtFldEmplIdAddNewEmpl, txtFldEntityIdAddNewEmpl, txtFldFirstName, 
+								txtFldLastName, /*txtFldStartDate, txtFldEndDate, */txtFldSalary,
+								btnSendNewEmployee, btnCancelNewEmployee,
+								startDate, endDate);
 		addNewEmployeeScene = new Scene(addNewEmployeeContenedor);
 		addNewEmployeeStage = new Stage();
 		addNewEmployeeStage.setTitle("Add new employee");
@@ -1007,6 +1068,120 @@ public class Main extends Application {
 		addNewEmployeeStage.setMinHeight(300);
 		addNewEmployeeStage.setScene(addNewEmployeeScene);
 		addNewEmployeeStage.show();
+		
+		
+	}
+	
+	public void newEmployeeSendButton() {
+		/*
+		txtFldEmplIdAddNewEmpl, txtFldEntityIdAddNewEmpl, txtFldFirstName, txtFldLastName, txtFldStartDate, txtFldEndDate, txtFldSalary
+		startDate, endDate
+		*/
+		
+		Employee newEmployee = new Employee();
+		newEmployee.setEmpl_id(txtFldEmplIdAddNewEmpl.getText());
+		newEmployee.setEntity_id(txtFldEntityIdAddNewEmpl.getText());
+		newEmployee.setFirst_name(txtFldFirstName.getText());
+		newEmployee.setLast_name(txtFldLastName.getText());
+		/***************************
+		 Trying to get the date from the DatePicker
+		 ***************************/
+		
+		newEmployee.setStart_date(startDate.getValue());
+		newEmployee.setEnd_date(endDate.getValue());
+		
+		/***************************
+		 End of getting the date from the DatePicker
+		 ***************************/
+		
+		newEmployee.setSalary(Double.parseDouble(txtFldSalary.getText()));
+		
+		//Adding to database
+		newEmployee.addNewEmployee();
+
+		
+		showEmployees();
+		
+		addNewEmployeeStage.close();
+	}
+	
+	//Method for showing all the employees in the tableview
+	public void showEmployees() {
+		
+		/*
+		 TableView tblEmployees;
+		 ObservableList<ObservableList> employeesList;
+		 */
+		
+		//The following statement removes the data before so no duplicates appearing
+		// after opening the table again.
+		tblEmployees.getColumns().clear();
+		
+		employeesList = FXCollections.observableArrayList();
+		
+		try {
+			//Creating connection
+			Connection myConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Bakery_Managment_System", "root", "1234");
+			//Creating object statement
+			Statement myStmt = myConnection.createStatement();
+			//Preparing a sql instruction
+			/*
+			 entity_id, entity_name, entity_city, entity_street, entity_street_number, entity_zip_code,
+			 entity_rental, entity_utilities, entity_employees_salary_sum, entity_income, entity_profit,
+			 entity_position_name
+			 */
+			//String sql = "SELECT entity_name FROM Entities;";
+			String sql = "SELECT empl_id AS id, first_name, last_name FROM Employees;";
+			
+			//Executing query
+			ResultSet rs = myStmt.executeQuery(sql);
+			
+			/***************************************************
+			 * TABLE COLUMN ADDED DYNAMICALLY *
+			 *********************************************/
+			
+			for(int i=0 ; i<rs.getMetaData().getColumnCount() ; i++) {
+				//We are using non property style for making dynamic table
+				final int j = i;
+				TableColumn col = new TableColumn(rs.getMetaData().getColumnName(i+1));
+				col.setCellValueFactory(new Callback<CellDataFeatures<ObservableList, String>, ObservableValue<String>>(){
+					public ObservableValue<String> call(CellDataFeatures<ObservableList, String> param) {
+						return new SimpleStringProperty(param.getValue().get(j).toString());
+					}
+				});
+				tblEmployees.getColumns().addAll(col);
+				//System.out.println("Column ["+i+"] ");
+			}
+			
+			/*********************************
+			 * DATA ADDED TO OBSERVABLELIST *
+			 *********************************/
+			
+			while(rs.next()) {
+				//Iterate Row
+				ObservableList<String> row = FXCollections.observableArrayList();
+				for(int i=1 ; i<=rs.getMetaData().getColumnCount() ; i++) {
+					//Iterate Column
+					row.add(rs.getString(i));
+				}
+				//System.out.println("Row added " + row );
+				employeesList.add(row);	
+			}
+			
+			tblEmployees.setItems(employeesList);
+			
+			rs.close();
+			myConnection.close();
+			
+			//Adding scroll
+			tblEmployees.setMaxWidth(241);
+			tblEmployees.setMaxHeight(400);
+				
+			
+		}catch(Exception e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			System.exit(0);
+		}
 		
 		
 	}

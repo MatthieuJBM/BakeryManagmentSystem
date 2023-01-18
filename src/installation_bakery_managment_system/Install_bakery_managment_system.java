@@ -33,10 +33,8 @@ public class Install_bakery_managment_system {
 									  + "PRIMARY KEY (entity_id) "
 									  + ");";
 		String sqlCreateTablePositions = "CREATE TABLE Positions( "
-								 // + "position_id varchar(10), "
 								  + "position_name varchar(30), "
 								  + "entity_id varchar(10) REFERENCES Entities(entity_id) "
-								  //+ "PRIMARY KEY (position_id) "
 								  + ");";
 		String sqlCreateTableEntities_costs = "CREATE TABLE Entities_costs( "
 								  + "entity_id varchar(10) REFERENCES Entities(entity_id), "
@@ -56,7 +54,6 @@ public class Install_bakery_managment_system {
 								  + "start_date date, "
 								  + "end_date date, "
 								  + "entity_id varchar(10) REFERENCES Entities(entity_id), "
-								 // + "position_id varchar(10) REFERENCES Positions(position_id), "
 								  + "PRIMARY KEY (empl_id) "
 								  + ");";
 		String sqlCreateTableEmployees_contact_info = "CREATE TABLE Employees_contact_info( "
