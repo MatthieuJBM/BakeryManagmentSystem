@@ -2,6 +2,9 @@ package application;
 
 import model_base_de_datos.*;
 import entity.*;
+
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.*;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -171,6 +174,7 @@ public class Main extends Application {
 			//Initializing MenuItem variables
 			mnuItmSave = new MenuItem("Save");
 			mnuItmExit = new MenuItem("Exit");
+				mnuItmExit.setOnAction(e -> myStage.close());
 			mnuExport = new Menu("Export");
 			
 			//Adding MenuItem to Menu
@@ -178,7 +182,9 @@ public class Main extends Application {
 			
 			//Creating and Adding submenus to Export
 			mnuItmExportToCsv = new MenuItem("Export to csv");
+				mnuItmExportToCsv.setOnAction(e -> exportEmployeesToCsv());
 			mnuItmExportToTxt = new MenuItem("Export to txt");
+				mnuItmExportToTxt.setOnAction(e -> exportEmployeesToTxt());
 			mnuExport.getItems().addAll(mnuItmExportToCsv, mnuItmExportToTxt);
 			
 			//Creating and adding MenuItem to Employees
@@ -186,10 +192,11 @@ public class Main extends Application {
 				mnuItmOpenEmployeesTab.setOnAction(e -> bakeryManagmentSystemsEmployeesViewCreator());
 			mnuItmAddNewEmployee = new MenuItem("Add new employee");
 				mnuItmAddNewEmployee.setOnAction(e -> addNewEmployeeWindow());
-			mnuItmChangeEmployeesProperty = new MenuItem("Change information about an employee");
+			//mnuItmChangeEmployeesProperty = new MenuItem("Change information about an employee");
 			mnuItmDeleteAnEmployee = new MenuItem("Delete an employee");
-			mnuItmShowFormerEmployees = new MenuItem("Show former employees");
-			mnuEmployees.getItems().addAll(mnuItmOpenEmployeesTab, mnuItmAddNewEmployee, mnuItmChangeEmployeesProperty, mnuItmDeleteAnEmployee, mnuItmShowFormerEmployees);			
+				mnuItmDeleteAnEmployee.setOnAction(e -> deleteEmployee());
+			//mnuItmShowFormerEmployees = new MenuItem("Show former employees");
+			mnuEmployees.getItems().addAll(mnuItmOpenEmployeesTab, mnuItmAddNewEmployee, /*mnuItmChangeEmployeesProperty,*/mnuItmDeleteAnEmployee/*, mnuItmShowFormerEmployees*/);			
 			
 			//Adding MenuItem Open to Entity tab
 			entityOpen = new MenuItem("Open");
@@ -1263,7 +1270,49 @@ public class Main extends Application {
 		
 	}
 	
+	public void exportEmployeesToTxt() {
+		
+		try {
+			FileWriter writer = new FileWriter("Employees.txt");
+			
+			//writer.write(tblEmployees.getItems().get(1).toString() + "\n");
 	
+			for(Object row : tblEmployees.getItems()) {
+				
+				writer.write(row.toString() + "\n");
+				
+			}
+			
+			writer.close();
+			
+		}catch(IOException ex) {
+			ex.printStackTrace();
+			
+		}
+		
+	}
+	
+	public void exportEmployeesToCsv() {
+		
+		try {
+			FileWriter writer = new FileWriter("Employees.csv");
+			
+			//writer.write(tblEmployees.getItems().get(1).toString() + "\n");
+	
+			for(Object row : tblEmployees.getItems()) {
+				
+				writer.write(row.toString() + "\n");
+				
+			}
+			
+			writer.close();
+			
+		}catch(IOException ex) {
+			ex.printStackTrace();
+			
+		}
+		
+	}
 	
 }
 
