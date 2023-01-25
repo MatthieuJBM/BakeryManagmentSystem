@@ -58,7 +58,7 @@ public class Main extends Application {
 	TableColumn tblClmnId, tblClmnFirstName, tblClmnLastName;
 	
 	//Declaring buttons to Employees tab
-	Button btnAddNewEmployee;
+	Button btnAddNewEmployee, btnDeleteEmployee;
 	
 	
 	//Declaring boolean values for see which view is on
@@ -134,13 +134,20 @@ public class Main extends Application {
 	****************/
 	
 	//Declaring variables for addNewEmployee view
-		Pane addNewEmployeeContenedor;
-		Scene addNewEmployeeScene;
-		Stage addNewEmployeeStage;
-		Label lblEmplIdAddNewEmpl, lblEntityIdAddNewEmpl, lblFirstName, lblLastName, lblSalary, lblStartDate, lblEndDate;
-		TextField txtFldEmplIdAddNewEmpl, txtFldEntityIdAddNewEmpl, txtFldFirstName, txtFldLastName, txtFldStartDate, txtFldEndDate, txtFldSalary;
-		Button btnSendNewEmployee, btnCancelNewEmployee;
-		DatePicker startDate, endDate;
+	Pane addNewEmployeeContenedor;
+	Scene addNewEmployeeScene;
+	Stage addNewEmployeeStage;
+	Label lblEmplIdAddNewEmpl, lblEntityIdAddNewEmpl, lblFirstName, lblLastName, lblSalary, lblStartDate, lblEndDate;
+	TextField txtFldEmplIdAddNewEmpl, txtFldEntityIdAddNewEmpl, txtFldFirstName, txtFldLastName, txtFldStartDate, txtFldEndDate, txtFldSalary;
+	Button btnSendNewEmployee, btnCancelNewEmployee;
+	DatePicker startDate, endDate;
+		
+	//Declaring variables for DeleteEmployee view	
+	Pane deleteEmployeeContenedor;
+	Scene deleteEmployeeScene;
+	Stage deleteEmployeeStage;
+	Label lblConfirmEmployeeDelete, lblAchtungEmployeeDelete;
+	Button btnConfirmEmployeeDelete, btnCancelEmployeeDelete;
 	
 	public void start(Stage myStage) {
 		try {
@@ -283,10 +290,11 @@ public class Main extends Application {
 			//Initializing buttons via self created method
 			btnAddNewEmployee = buttonCreatorHelper("Add new employee", 15, 480, 130, 20);
 				btnAddNewEmployee.setOnAction(e -> addNewEmployeeWindow());
-			
+			btnDeleteEmployee = buttonCreatorHelper("Delete Employee", 15, 510, 120, 20);
+				btnDeleteEmployee.setOnAction(e -> deleteEmployee());
 			contenedorEmployees = new Pane();
 			
-			contenedorEmployees.getChildren().addAll(lblEmployees, tblEmployees, btnAddNewEmployee);
+			contenedorEmployees.getChildren().addAll(lblEmployees, tblEmployees, btnAddNewEmployee, btnDeleteEmployee);
 			
 			employeesCreated = true;
 		}
@@ -1183,6 +1191,75 @@ public class Main extends Application {
 			System.exit(0);
 		}
 		
+		
+	}
+	
+	//Method for show the delete an employee window with the confirmation action
+	public void deleteEmployee() {
+		
+		/*
+		Pane deleteEmployeeContenedor;
+		Scene deleteEmployeeScene;
+		Stage deleteEmployeeStage;
+		Label lblConfirmEmployeeDelete;
+		Button btnConfirmEmployeeDelete, btnCancelEmployeeDelete;
+		*/
+		try {
+			String employee_emplId = tblEmployees.getSelectionModel().getSelectedItem().toString().substring(1, 3);
+			System.out.println("Employee id is: " + employee_emplId);
+		
+			lblConfirmEmployeeDelete = labelCreatorHelper("Confirm the elimination of the selected employee: ", 20, 20);
+			Label lblSelectedEmployee = labelCreatorHelper(employee_emplId, 145, 40);
+			lblAchtungEmployeeDelete = labelCreatorHelper("Please, note this change cannot be undone!", 20, 60);
+		
+			btnConfirmEmployeeDelete = buttonCreatorHelper("Send", 20, 90, 70, 20);
+				btnConfirmEmployeeDelete.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #05F81B");
+				btnConfirmEmployeeDelete.setOnAction(e -> deleteSelectedEmployee());
+			btnCancelEmployeeDelete = buttonCreatorHelper("Cancel", 170, 90, 70, 20);
+				btnCancelEmployeeDelete.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #FF0500");
+				btnCancelEmployeeDelete.setOnAction(e -> deleteEmployeeStage.close());
+		
+			deleteEmployeeContenedor = new Pane();
+				deleteEmployeeContenedor.getChildren().addAll(lblConfirmEmployeeDelete, lblAchtungEmployeeDelete, btnConfirmEmployeeDelete, btnCancelEmployeeDelete, lblSelectedEmployee);
+			deleteEmployeeScene = new Scene(deleteEmployeeContenedor);
+			deleteEmployeeStage = new Stage();
+				deleteEmployeeStage.setTitle("Delete the selected employee");
+				deleteEmployeeStage.setMinWidth(300);
+				deleteEmployeeStage.setMinHeight(200);
+				deleteEmployeeStage.setScene(deleteEmployeeScene);
+				deleteEmployeeStage.show();
+		}catch(Exception e) {
+			System.out.println("Nothing selected, please try again.");
+		}
+		
+	}
+	
+	//Method for delete the selected employee once confirmed
+	public void deleteSelectedEmployee() {
+		try {
+			String employee_emplId = tblEmployees.getSelectionModel().getSelectedItem().toString().substring(1, 3);
+			System.out.println("Employee id is: " + employee_emplId);
+			
+			Connection myConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Bakery_Managment_System", "root", "1234");
+			Statement myStmt = myConnection.createStatement();
+			
+			String sql = "DELETE FROM Employees WHERE Employees.empl_id = '" + employee_emplId + "';";
+			
+			myStmt.execute("USE Bakery_Managment_System;");
+			myStmt.execute(sql);
+			
+			System.out.println("The selected employee has been deleted successfully!");
+			
+			myStmt.close();
+			myConnection.close();
+			
+			showEmployees();
+			deleteEmployeeStage.close();
+			
+		}catch(Exception e) {
+			System.out.println("The selected employee couldn't be deleted. Please try again!");
+			e.printStackTrace();
+		}
 		
 	}
 	
