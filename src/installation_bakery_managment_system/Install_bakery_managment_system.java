@@ -73,6 +73,9 @@ public class Install_bakery_managment_system {
 								  + "street_number varchar(10), "
 								  + "zip_code varchar(10) "
 								  + ");";
+		String sqlAddingDeleteOnCascadeConstraintToContactInfo = "ALTER TABLE Employees_contact_info ADD CONSTRAINT fk_empl_id FOREIGN KEY (empl_id)"
+										+ " REFERENCES Employees(empl_id) ON DELETE CASCADE ON UPDATE NO ACTION;";
+		
 		
 		try {
 			//Creating connection
@@ -87,6 +90,7 @@ public class Install_bakery_managment_system {
 			myStmt.executeUpdate(sqlCreateTableEmployees);
 			myStmt.executeUpdate(sqlCreateTableEmployees_contact_info);
 			myStmt.executeUpdate(sqlCreateTableEmergency_contact);
+			myStmt.executeUpdate(sqlAddingDeleteOnCascadeConstraintToContactInfo);
 			
 			
 			myConnection.close();

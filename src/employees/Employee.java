@@ -15,7 +15,49 @@ public class Employee implements Employed {
 	private LocalDate start_date;
 	private LocalDate end_date;
 	private double salary;
+	private String email;
+	private String phone_number;
+	private String city;
+	private String zip_code;
+	private String street;
+	private String street_number;
 	
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public String getPhone_number() {
+		return phone_number;
+	}
+	public void setPhone_number(String phone_number) {
+		this.phone_number = phone_number;
+	}
+	public String getCity() {
+		return city;
+	}
+	public void setCity(String city) {
+		this.city = city;
+	}
+	public String getZip_code() {
+		return zip_code;
+	}
+	public void setZip_code(String zip_code) {
+		this.zip_code = zip_code;
+	}
+	public String getStreet() {
+		return street;
+	}
+	public void setStreet(String street) {
+		this.street = street;
+	}
+	public String getStreet_number() {
+		return street_number;
+	}
+	public void setStreet_number(String street_number) {
+		this.street_number = street_number;
+	}
 	public String getEmpl_id() {
 		return empl_id;
 	}
@@ -80,6 +122,30 @@ public class Employee implements Employed {
 		}
 	}
 	
+	public void addEmployeeContactInformation() {
+		try {
+			//Creating connection
+			Connection myConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Bakery_Managment_System", "root", "1234");
+			//Creating object statement
+			Statement myStmt = myConnection.createStatement();
+			//Preparing a sql instruction
+			
+			/*
+		
+			 
+			 */
+			String sql = "INSERT INTO Employees_contact_info(empl_id, email, phone, city, street, street_number, zip_code) "
+					+ "VALUES ('" + this.empl_id + "', '" + this.email + "', '" + this.phone_number + "', '" + this.city + "', '" + this.street + "', '" + this.street_number + "', '" + this.zip_code + "');";
+			
+			//Executing query
+			myStmt.executeUpdate(sql);
+			myConnection.close();
+			
+		}catch(Exception e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			System.exit(0);
+		}
+	}
 	
 	
 	

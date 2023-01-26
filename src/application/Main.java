@@ -2,13 +2,12 @@ package application;
 
 import model_base_de_datos.*;
 import entity.*;
-
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.sql.*;
 import java.time.Instant;
 import java.util.ArrayList;
-
 import installation_bakery_managment_system.*;	
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
@@ -33,8 +32,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import employees.*;;
+import employees.*;
+import java.util.regex.*;
 
 public class Main extends Application {
 	//Declaring variables needed for this program.
@@ -61,7 +62,7 @@ public class Main extends Application {
 	TableColumn tblClmnId, tblClmnFirstName, tblClmnLastName;
 	
 	//Declaring buttons to Employees tab
-	Button btnAddNewEmployee, btnDeleteEmployee;
+	Button btnAddNewEmployee, btnDeleteEmployee, btnShowAllInformationAboutTheEmployees, btnEmployeesContactInformation;
 	
 	
 	//Declaring boolean values for see which view is on
@@ -151,6 +152,15 @@ public class Main extends Application {
 	Stage deleteEmployeeStage;
 	Label lblConfirmEmployeeDelete, lblAchtungEmployeeDelete;
 	Button btnConfirmEmployeeDelete, btnCancelEmployeeDelete;
+	
+	//Declaring variables for Add Employee Information View
+	Label lblEmplId, lblEmplEmail, lblEmplPhone, lblEmplCity, lblEmplStreet, lblEmplStreetNumber, lblEmplZipCode;
+	Label warningLabel;
+	TextField txtFldEmplId, txtFldEmplEmail, txtFldEmplPhone, txtFldEmplCity, txtFldEmplStreet, txtFldEmplStreetNumber, txtFldEmplZipCode;
+	Stage addEmployeeContactInformationStage;
+	Scene addEmployeeContactInformationScene;
+	Pane addEmployeeContactInformationContenedor;
+	Button btnSendEmployeeContactInformation, btnCancelEmployeeContactInformation;
 	
 	public void start(Stage myStage) {
 		try {
@@ -299,9 +309,15 @@ public class Main extends Application {
 				btnAddNewEmployee.setOnAction(e -> addNewEmployeeWindow());
 			btnDeleteEmployee = buttonCreatorHelper("Delete Employee", 15, 510, 120, 20);
 				btnDeleteEmployee.setOnAction(e -> deleteEmployee());
+			btnShowAllInformationAboutTheEmployees = buttonCreatorHelper("Show All Information", 15, 540, 120, 20);
+				btnShowAllInformationAboutTheEmployees.setOnAction(e -> showAllInformationAboutEmployees());	
+			btnEmployeesContactInformation = buttonCreatorHelper("Add contact info", 140, 480, 120, 20);
+				btnEmployeesContactInformation.setOnAction(e -> addEmployeesContactInformation());
+				
+				
 			contenedorEmployees = new Pane();
 			
-			contenedorEmployees.getChildren().addAll(lblEmployees, tblEmployees, btnAddNewEmployee, btnDeleteEmployee);
+			contenedorEmployees.getChildren().addAll(lblEmployees, tblEmployees, btnAddNewEmployee, btnDeleteEmployee, btnShowAllInformationAboutTheEmployees, btnEmployeesContactInformation);
 			
 			employeesCreated = true;
 		}
@@ -1313,6 +1329,233 @@ public class Main extends Application {
 		}
 		
 	}
+	
+	
+	public void showAllInformationAboutEmployees() {
+		//The following statement removes the data before so no duplicates appearing
+		// after opening the table again.
+		tblEmployees.getColumns().clear();
+		employeesList = FXCollections.observableArrayList();
+		
+		try {
+			//Creating connection
+			Connection myConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Bakery_Managment_System", "root", "1234");
+			//Creating object statement
+			Statement myStmt = myConnection.createStatement();
+			//Preparing a sql instruction
+			String sql = "SELECT * FROM Employees e JOIN Employees_contact_info einf\n"
+					+ "ON e.empl_id = einf.empl_id;";
+			
+			//Executing query
+			ResultSet rs = myStmt.executeQuery(sql);
+			
+			/***************************************************
+			 * TABLE COLUMN ADDED DYNAMICALLY *
+			 *********************************************/
+			
+			for(int i=0 ; i<rs.getMetaData().getColumnCount() ; i++) {
+				//We are using non property style for making dynamic table
+				final int j = i;
+				TableColumn col = new TableColumn(rs.getMetaData().getColumnName(i+1));
+				col.setCellValueFactory(new Callback<CellDataFeatures<ObservableList, String>, ObservableValue<String>>(){
+					public ObservableValue<String> call(CellDataFeatures<ObservableList, String> param) {
+						return new SimpleStringProperty(param.getValue().get(j).toString());
+					}
+				});
+				tblEmployees.getColumns().addAll(col);
+				//System.out.println("Column ["+i+"] ");
+			}
+			
+			/*********************************
+			 * DATA ADDED TO OBSERVABLELIST *
+			 *********************************/
+			
+			while(rs.next()) {
+				//Iterate Row
+				ObservableList<String> row = FXCollections.observableArrayList();
+				for(int i=1 ; i<=rs.getMetaData().getColumnCount() ; i++) {
+					//Iterate Column
+					row.add(rs.getString(i));
+				}
+				//System.out.println("Row added " + row );
+				employeesList.add(row);	
+			}
+			
+			tblEmployees.setItems(employeesList);
+			
+			rs.close();
+			myConnection.close();
+				
+			//Adding scroll
+			tblEmployees.setMaxWidth(500);
+			tblEmployees.setMaxHeight(400);
+			
+			
+		}catch(Exception e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			System.exit(0);
+		}
+	}
+	
+	
+	public void addEmployeesContactInformation() {
+		
+		try {
+			String employee_emplId = tblEmployees.getSelectionModel().getSelectedItem().toString().substring(1, 3);
+			System.out.println("Employee id is: " + employee_emplId);
+			
+			/*
+			lblEmplId, lblEmplEmail, lblEmplPhone, lblEmplCity, lblEmplZipCode, lblEmplStreet, lblEmplStreetNumber
+			txtFldEmplId, txtFldEmplEmail, txtFldEmplPhone, txtFldEmplCity, txtFldEmplZipCode, txtFldEmplStreet, txtFldEmplStreetNumber
+			*/
+			
+			
+			// x 150; y 75
+			
+			//Creating all the Labels
+			lblEmplId = labelCreatorHelper("Empl id:", 25, 25);
+			lblEmplEmail = labelCreatorHelper("Email:", 25, 100);
+			lblEmplPhone = labelCreatorHelper("Phone number: ", 225, 100);
+			lblEmplCity = labelCreatorHelper("City:", 25, 175);
+			lblEmplZipCode = labelCreatorHelper("Zip Code:", 225, 175);
+			lblEmplStreet = labelCreatorHelper("Street:", 25, 250);
+			lblEmplStreetNumber = labelCreatorHelper("Street Number:", 225, 250);
+			
+			warningLabel = labelCreatorHelper("Wrong Email", 70, 100);
+				//warningLabel.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #FF0500");
+				warningLabel.setTextFill(Color.web("#FF0500"));
+				warningLabel.setVisible(false);
+			
+			
+			//Creating all the TextFields
+			txtFldEmplId = textFieldCreatorHelper(25, 45, 35, 35);
+				txtFldEmplId.setText(employee_emplId);
+				txtFldEmplId.setEditable(false);
+				txtFldEmplId.setFocusTraversable(false);
+				txtFldEmplId.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #C6C1C1");
+			txtFldEmplEmail = textFieldCreatorHelper(25, 120, 150, 35);
+				txtFldEmplEmail.setText("@");
+				//txtFldEmplEmail.requestFocus();
+			txtFldEmplPhone = textFieldCreatorHelper(225, 120, 150, 35);
+				txtFldEmplPhone.setText("+48");
+			txtFldEmplCity = textFieldCreatorHelper(25, 195, 150, 35);
+			txtFldEmplZipCode = textFieldCreatorHelper(225, 195, 150, 35);
+			txtFldEmplStreet = textFieldCreatorHelper(25, 270, 150, 35);
+			txtFldEmplStreetNumber = textFieldCreatorHelper(225, 270, 150, 35);
+			
+			
+			//Creating buttons to send and cancel
+			//btnSendEmployeeContactInformation, btnCancelEmployeeContactInformation
+			btnSendEmployeeContactInformation = buttonCreatorHelper("Send", 100, 320, 70, 20);
+				btnSendEmployeeContactInformation.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #05F81B");
+				btnSendEmployeeContactInformation.setOnAction(e -> employeeContactInformationSendButton());
+			btnCancelEmployeeContactInformation = buttonCreatorHelper("Cancel", 200, 320, 70, 20);
+				btnCancelEmployeeContactInformation.setStyle("-fx-font: 14 Euphorigenic; -fx-base: #FF0500");
+				btnCancelEmployeeContactInformation.setOnAction(e -> addEmployeeContactInformationStage.close());
+			
+			addEmployeeContactInformationContenedor = new Pane();
+				addEmployeeContactInformationContenedor.getChildren().addAll(lblEmplId, lblEmplEmail, lblEmplPhone, lblEmplCity, lblEmplZipCode, lblEmplStreet, lblEmplStreetNumber,
+								txtFldEmplId, txtFldEmplEmail, txtFldEmplPhone, txtFldEmplCity, txtFldEmplZipCode, txtFldEmplStreet, txtFldEmplStreetNumber,
+								btnSendEmployeeContactInformation, btnCancelEmployeeContactInformation, warningLabel);
+			addEmployeeContactInformationScene = new Scene(addEmployeeContactInformationContenedor);
+			addEmployeeContactInformationStage = new Stage();
+			addEmployeeContactInformationStage.setTitle("Add Contact Information to the following employee: " + employee_emplId);
+			addEmployeeContactInformationStage.setMinWidth(430);
+			addEmployeeContactInformationStage.setMinHeight(400);
+			addEmployeeContactInformationStage.setScene(addEmployeeContactInformationScene);
+			addEmployeeContactInformationStage.show();
+			
+			
+		}catch (Exception e) {
+			System.out.println("Nothing selected, please try again.");
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
+	public void employeeContactInformationSendButton() {
+		/*
+		txtFldEmplId, txtFldEmplEmail, txtFldEmplPhone, txtFldEmplCity, txtFldEmplZipCode, txtFldEmplStreet, txtFldEmplStreetNumber
+		*/
+		
+		
+		//String validEmail = txtFldEmplEmail.getText();
+		if(isValid(txtFldEmplEmail.getText())) {
+			Employee newEmpl = new Employee();
+			newEmpl.setEmpl_id(txtFldEmplId.getText());
+			
+			newEmpl.setEmail(txtFldEmplEmail.getText());
+			
+			newEmpl.setPhone_number(txtFldEmplPhone.getText());
+			newEmpl.setCity(txtFldEmplCity.getText());
+			newEmpl.setZip_code(txtFldEmplZipCode.getText());
+			newEmpl.setStreet(txtFldEmplStreet.getText());
+			newEmpl.setStreet_number(txtFldEmplStreetNumber.getText());
+			
+			
+			newEmpl.addEmployeeContactInformation();
+			
+			showEmployees();
+			
+			addEmployeeContactInformationStage.close();
+			
+			
+			
+		}else {
+			warningLabel.setVisible(true);
+			System.out.println("Wrong email");
+		}
+		
+		
+		/*
+		
+		Employee newEmpl = new Employee();
+		newEmpl.setEmpl_id(txtFldEmplId.getText());
+		
+		newEmpl.setEmail(txtFldEmplEmail.getText());
+		
+		newEmpl.setPhone_number(txtFldEmplPhone.getText());
+		newEmpl.setCity(txtFldEmplCity.getText());
+		newEmpl.setZip_code(txtFldEmplZipCode.getText());
+		newEmpl.setStreet(txtFldEmplStreet.getText());
+		newEmpl.setStreet_number(txtFldEmplStreetNumber.getText());
+		
+		
+		newEmpl.addEmployeeContactInformation();
+		
+		showEmployees();
+		
+		addEmployeeContactInformationStage.close();
+		
+		*/
+	}
+	
+	public static boolean isValid(String email) {
+		//try {
+			//String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\\\.[a-zA-Z0-9_+&*-]"
+			//				+ "+)*@(?:[a-zA-Z0-9-]+\\\\.)+[a-zA-Z]{2,7}$";
+			
+			//String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+			
+			String emailRegex = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}";
+			
+		
+			Pattern pat = Pattern.compile(emailRegex);
+			if(email == null) {
+				return false;
+			}else {
+				System.out.println(pat.matcher(email).matches());
+				return pat.matcher(email).matches();
+			}
+		//}catch(Exception e) {
+		//	System.out.println("Wrong email");
+		//	return false;
+	//	}
+		
+		
+	}
+	
 	
 }
 
